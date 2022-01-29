@@ -46,139 +46,151 @@ def loadSprites():
         }
     }
 
+class robot:
+    global robots
+    def draw():
+        for robot in robots:
+            screen.blit(allSprites[robot.sprite][robot.orientation], (robot.tileX*100+robot.pixelX, robot.tileY*100+robot.pixelY))
+    
+    def drawRegister():
+        for i in range(len(robots[playersTurn].register)):
+            screen.blit(allSprites["card"][robots[0].register[i]], (1300+124*i,0))
+        pygame.draw.rect(screen, (255, 0, 0), [1300+124*register, 0, 124, 171], 10)
+    
+    def discardRegisters(): # Needs to be changed to discard cards to players discard pile in the future
+        for robot in robots:
+            robot.register = []
+    
+    def fillRegisters():
+        for robot in robots:
+            for y in range(5):
+                robot.register.append(choice(robot.deck))
+
+
+    tileX = 0
+    tileY = 0
+    pixelX = 0
+    pixelY = 0
+    orientation = 1
+    deck = [ #"again", "again", removed as for now it makes no sense
+        "leftTurn", "leftTurn", "leftTurn", "move1", "move1", "move1", "move1", "move1", "move2", "move2", "move2", "move3", "moveBack", "powerUp", "rightTurn", "rightTurn", "rightTurn", "uTurn"
+    ]
+    hand = []
+    discard = []
+    register = []
+    sprite = "twonky"
+    moved = False
+    moving = False
+    movementLeftInTiles = 0
+    movementLeftInTicks = 0
+    movementDirection = 0
+    movementAxis = "X"
+    movement = 0
+    alive = True
+
+
 def drawGameBoard():
     screen.fill((0,0,0))
     for tile in listOfTiles:
         screen.blit(allSprites[tile["sprite"]][tile["orientation"]], (tile["tileX"]*100, tile["tileY"]*100))
 
-def initiatePlayers():
-    player = {
-        "tileX": 0,
-        "tileY": 0,
-        "pixelX": 0,
-        "pixelY": 0,
-        "orientation": 1,
-        "deck": [ #"again", "again", removed as for now it makes no sense
-            "leftTurn", "leftTurn", "leftTurn", "move1", "move1", "move1", "move1", "move1", "move2", "move2", "move2", "move3", "moveBack", "powerUp", "rightTurn", "rightTurn", "rightTurn", "uTurn"
-        ],
-        "hand": [],
-        "discard": [],
-        "register": [],
-        "sprite": "twonky",
-        "moved": False,
-        "moving": False,
-        "movementLeftInTiles": 0,
-        "movementLeftInTicks": 0,
-        "movementDirection": 0,
-        "movementAxis": "X",
-        "movement": 0,
-        "alive": True 
-    }
-    players = []
+def initiateRobots():
+    robots = []
     for i in range(numberOfPlayers):
-        players.append(player.copy())
-    return players
-
-def drawPlayers():
-    for player in players:
-        screen.blit(allSprites[player["sprite"]][player["orientation"]], (player["tileX"]*100+player["pixelX"], player["tileY"]*100+player["pixelY"]))
-
-def drawRegister():
-    for i in range(len(players[playersTurn]["register"])):
-        screen.blit(allSprites["card"][players[0]["register"][i]], (1300+124*i,0))
-    pygame.draw.rect(screen, (255, 0, 0), [1300+124*register, 0, 124, 171], 10)
+        robots.append(robot)
+    return robots
 
 def movementValid(): # Returns True or False
 
-    if players[playersTurn]["register"][register] == "leftTurn" or players[playersTurn]["register"][register] == "powerUp" or players[playersTurn]["register"][register] == "rightTurn" or players[playersTurn]["register"][register] == "uTurn":
+    if robots[playersTurn].register[register] == "leftTurn" or robots[playersTurn].register[register] == "powerUp" or robots[playersTurn].register[register] == "rightTurn" or robots[playersTurn].register[register] == "uTurn":
         return True
     
-    elif players[playersTurn]["register"][register] == "move1" or players[playersTurn]["register"][register] == "move2" or players[playersTurn]["register"][register] == "move3": # Kan muligens refactoreres ettersom orientasjonene er 0 og 2 eller 1 og 3...
-        if players[playersTurn]["orientation"] == 0:
+    elif robots[playersTurn].register[register] == "move1" or robots[playersTurn].register[register] == "move2" or robots[playersTurn].register[register] == "move3": # Kan muligens refactoreres ettersom orientasjonene er 0 og 2 eller 1 og 3...
+        if robots[playersTurn].orientation == 0:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 0:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]-1):
+                elif (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY-1):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 2:
                             return False
         
-        if players[playersTurn]["orientation"] == 1:
+        if robots[playersTurn].orientation == 1:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 1:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]+1) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                elif (tile["tileX"] == robots[playersTurn].tileX+1) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 3:
                             return False
         
-        if players[playersTurn]["orientation"] == 2:
+        if robots[playersTurn].orientation == 2:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 2:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]+1):
+                elif (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY+1):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 0:
                             return False
         
-        if players[playersTurn]["orientation"] == 3:
+        if robots[playersTurn].orientation == 3:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 3:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]-1) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                elif (tile["tileX"] == robots[playersTurn].tileX-1) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 1:
                             return False
     
-    elif players[playersTurn]["register"][register] == "moveBack":
-        if players[playersTurn]["orientation"] == 0:
+    elif robots[playersTurn].register[register] == "moveBack":
+        if robots[playersTurn].orientation == 0:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 2:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]+1):
+                elif (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY+1):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 0:
                             return False
                             
-        if players[playersTurn]["orientation"] == 1:
+        if robots[playersTurn].orientation == 1:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 3:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]-1) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                elif (tile["tileX"] == robots[playersTurn].tileX-1) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 1:
                             return False
                             
-        if players[playersTurn]["orientation"] == 2:
+        if robots[playersTurn].orientation == 2:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 0:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]-1):
+                elif (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY-1):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 2:
                             return False
                             
-        if players[playersTurn]["orientation"] == 3:
+        if robots[playersTurn].orientation == 3:
             for tile in listOfTiles:
-                if (tile["tileX"] == players[playersTurn]["tileX"]) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                if (tile["tileX"] == robots[playersTurn].tileX) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 1:
                             return False
-                elif (tile["tileX"] == players[playersTurn]["tileX"]+1) and (tile["tileY"] == players[playersTurn]["tileY"]):
+                elif (tile["tileX"] == robots[playersTurn].tileX+1) and (tile["tileY"] == robots[playersTurn].tileY):
                     if tile["sprite"] == "wallTile":
                         if tile["orientation"] == 3:
                             return False
@@ -189,158 +201,155 @@ def move():
     movement = 50 # Movement * movementTicks should be roughly 100 to avoid the bot from jumping when ariving at new tiles
     movementTicks = 2
     if firstItterationOfRegister:
-        players[playersTurn]["moved"] = True
+        robots[playersTurn].moved = True
         firstItterationOfRegister = False
         if movementValid():
-            players[playersTurn]["moving"] = True
-            players[playersTurn]["movement"] = movement
+            robots[playersTurn].moving = True
+            robots[playersTurn].movement = movement
 
-            if players[playersTurn]["register"][register] == "move1":
-                players[playersTurn]["movementLeftInTiles"] = 1
-                players[playersTurn]["movementLeftInTicks"] = movementTicks
-                if players[playersTurn]["orientation"] == 0:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "Y"
-                    players[playersTurn]["tileY"] -= 1
-                    players[playersTurn]["pixelY"] = movement * movementTicks
-                elif players[playersTurn]["orientation"] == 1:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "X"
-                elif players[playersTurn]["orientation"] == 2:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "Y"
+            if robots[playersTurn].register[register] == "move1":
+                robots[playersTurn].movementLeftInTiles = 1
+                robots[playersTurn].movementLeftInTicks = movementTicks
+                if robots[playersTurn].orientation == 0:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "Y"
+                    robots[playersTurn].tileY -= 1
+                    robots[playersTurn].pixelY = movement * movementTicks
+                elif robots[playersTurn].orientation == 1:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "X"
+                elif robots[playersTurn].orientation == 2:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "Y"
                 else:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "X"
-                    players[playersTurn]["tileX"] -= 1
-                    players[playersTurn]["pixelX"] = movement * movementTicks
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "X"
+                    robots[playersTurn].tileX -= 1
+                    robots[playersTurn].pixelX = movement * movementTicks
 
-            elif players[playersTurn]["register"][register] == "move2":
-                players[playersTurn]["movementLeftInTiles"] = 2
-                players[playersTurn]["movementLeftInTicks"] = movementTicks
-                if players[playersTurn]["orientation"] == 0:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "Y"
-                    players[playersTurn]["tileY"] -= 1
-                    players[playersTurn]["pixelY"] = movement * movementTicks
-                elif players[playersTurn]["orientation"] == 1:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "X"
-                elif players[playersTurn]["orientation"] == 2:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "Y"
+            elif robots[playersTurn].register[register] == "move2":
+                robots[playersTurn].movementLeftInTiles = 2
+                robots[playersTurn].movementLeftInTicks = movementTicks
+                if robots[playersTurn].orientation == 0:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "Y"
+                    robots[playersTurn].tileY -= 1
+                    robots[playersTurn].pixelY = movement * movementTicks
+                elif robots[playersTurn].orientation == 1:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "X"
+                elif robots[playersTurn].orientation == 2:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "Y"
                 else:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "X"
-                    players[playersTurn]["tileX"] -= 1
-                    players[playersTurn]["pixelX"] = movement * movementTicks
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "X"
+                    robots[playersTurn].tileX -= 1
+                    robots[playersTurn].pixelX = movement * movementTicks
 
-            elif players[playersTurn]["register"][register] == "move3":
-                players[playersTurn]["movementLeftInTiles"] = 3
-                players[playersTurn]["movementLeftInTicks"] = movementTicks
-                if players[playersTurn]["orientation"] == 0:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "Y"
-                    players[playersTurn]["tileY"] -= 1
-                    players[playersTurn]["pixelY"] = movement * movementTicks
-                elif players[playersTurn]["orientation"] == 1:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "X"
-                elif players[playersTurn]["orientation"] == 2:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "Y"
+            elif robots[playersTurn].register[register] == "move3":
+                robots[playersTurn].movementLeftInTiles = 3
+                robots[playersTurn].movementLeftInTicks = movementTicks
+                if robots[playersTurn].orientation == 0:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "Y"
+                    robots[playersTurn].tileY -= 1
+                    robots[playersTurn].pixelY = movement * movementTicks
+                elif robots[playersTurn].orientation == 1:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "X"
+                elif robots[playersTurn].orientation == 2:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "Y"
                 else:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "X"
-                    players[playersTurn]["tileX"] -= 1
-                    players[playersTurn]["pixelX"] = movement * movementTicks
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "X"
+                    robots[playersTurn].tileX -= 1
+                    robots[playersTurn].pixelX = movement * movementTicks
 
-            elif players[playersTurn]["register"][register] == "moveBack":
-                players[playersTurn]["movementLeftInTiles"] = 1
-                players[playersTurn]["movementLeftInTicks"] = movementTicks
-                if players[playersTurn]["orientation"] == 0:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "Y"
-                elif players[playersTurn]["orientation"] == 1:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "X"
-                    players[playersTurn]["tileX"] -= 1
-                    players[playersTurn]["pixelX"] = movement * movementTicks
-                elif players[playersTurn]["orientation"] == 2:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "Y"
-                    players[playersTurn]["tileY"] -= 1
-                    players[playersTurn]["pixelY"] = movement * movementTicks
+            elif robots[playersTurn].register[register] == "moveBack":
+                robots[playersTurn].movementLeftInTiles = 1
+                robots[playersTurn].movementLeftInTicks = movementTicks
+                if robots[playersTurn].orientation == 0:
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "Y"
+                elif robots[playersTurn].orientation == 1:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "X"
+                    robots[playersTurn].tileX -= 1
+                    robots[playersTurn].pixelX = movement * movementTicks
+                elif robots[playersTurn].orientation == 2:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "Y"
+                    robots[playersTurn].tileY -= 1
+                    robots[playersTurn].pixelY = movement * movementTicks
                 else:
-                    players[playersTurn]["movementDirection"] = 1
-                    players[playersTurn]["movementAxis"] = "X"        
+                    robots[playersTurn].movementDirection = 1
+                    robots[playersTurn].movementAxis = "X"        
 
-        if players[playersTurn]["register"][register] == "leftTurn":
-            players[playersTurn]["moving"] = False
-            if players[playersTurn]["orientation"] == 0:
-                players[playersTurn]["orientation"] = 3
-            else: players[playersTurn]["orientation"] -= 1
+        if robots[playersTurn].register[register] == "leftTurn":
+            robots[playersTurn].moving = False
+            if robots[playersTurn].orientation == 0:
+                robots[playersTurn].orientation = 3
+            else: robots[playersTurn].orientation -= 1
 
-        elif players[playersTurn]["register"][register] == "rightTurn":
-            players[playersTurn]["moving"] = False
-            if players[playersTurn]["orientation"] == 3:
-                players[playersTurn]["orientation"] = 0
-            else: players[playersTurn]["orientation"] += 1  
+        elif robots[playersTurn].register[register] == "rightTurn":
+            robots[playersTurn].moving = False
+            if robots[playersTurn].orientation == 3:
+                robots[playersTurn].orientation = 0
+            else: robots[playersTurn].orientation += 1  
 
-        elif players[playersTurn]["register"][register] == "uTurn":
-            players[playersTurn]["moving"] = False
-            if players[playersTurn]["orientation"] < 2:
-                players[playersTurn]["orientation"] += 2
-            else: players[playersTurn]["orientation"] -= 2
+        elif robots[playersTurn].register[register] == "uTurn":
+            robots[playersTurn].moving = False
+            if robots[playersTurn].orientation < 2:
+                robots[playersTurn].orientation += 2
+            else: robots[playersTurn].orientation -= 2
 
-        elif players[playersTurn]["register"][register] == "powerUp": # Todo, needs work
-            players[playersTurn]["moving"] = False
+        elif robots[playersTurn].register[register] == "powerUp": # Todo, needs work
+            robots[playersTurn].moving = False
 
-        elif players[playersTurn]["register"][register] == "again": # Todo, needs work
-            players[playersTurn]["moving"] = False
+        elif robots[playersTurn].register[register] == "again": # Todo, needs work
+            robots[playersTurn].moving = False
 
-    if players[playersTurn]["movementLeftInTicks"]:
-        players[playersTurn]["pixel" + players[playersTurn]["movementAxis"]] += players[playersTurn]["movement"] * players[playersTurn]["movementDirection"]
-        players[playersTurn]["movementLeftInTicks"] -= 1
+    if robots[playersTurn].movementLeftInTicks:
+        if robots[playersTurn].movementAxis == "x":
+            robots[playersTurn].pixelX += robots[playersTurn].movement * robots[playersTurn].movementDirection
+        else:
+            robots[playersTurn].pixelY += robots[playersTurn].movement * robots[playersTurn].movementDirection
+        robots[playersTurn].movementLeftInTicks -= 1
 
-    elif players[playersTurn]["movementLeftInTiles"]:
-        players[playersTurn]["pixel" + players[playersTurn]["movementAxis"]] = 0
-        if players[playersTurn]["register"][register] == "move1" or players[playersTurn]["register"][register] == "move2" or players[playersTurn]["register"][register] == "move3": 
-            if players[playersTurn]["orientation"] == 1: #Move these four lines to after the movement pixelX/Y is done, check todo at the bottom!
-                players[playersTurn]["tileX"] += 1
-            elif players[playersTurn]["orientation"] == 2:
-                players[playersTurn]["tileY"] += 1
-        players[playersTurn]["movementLeftInTiles"] -= 1
-        if players[playersTurn]["movementLeftInTiles"]:
+    elif robots[playersTurn].movementLeftInTiles:
+        if robots[playersTurn].movementAxis == "x":
+            robots[playersTurn].pixelX = 0
+        else:
+            robots[playersTurn].pixelY = 0 # her blir det enten pixelX eller PixelY ut ifra hva som ligger i movementAxis. Hvordan gjør man dette med classer?
+        if robots[playersTurn].register[register] == "move1" or robots[playersTurn].register[register] == "move2" or robots[playersTurn].register[register] == "move3": 
+            if robots[playersTurn].orientation == 1: #Move these four lines to after the movement pixelX/Y is done, check todo at the bottom!
+                robots[playersTurn].tileX += 1
+            elif robots[playersTurn].orientation == 2:
+                robots[playersTurn].tileY += 1
+        robots[playersTurn].movementLeftInTiles -= 1
+        if robots[playersTurn].movementLeftInTiles:
             if movementValid():
-                players[playersTurn]["movementLeftInTicks"] = movementTicks
-                if players[playersTurn]["orientation"] == 0:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "Y"
-                    players[playersTurn]["tileY"] -= 1
-                    players[playersTurn]["pixelY"] = movement * movementTicks
-                elif players[playersTurn]["orientation"] == 3:
-                    players[playersTurn]["movementDirection"] = -1
-                    players[playersTurn]["movementAxis"] = "X"
-                    players[playersTurn]["tileX"] -= 1
-                    players[playersTurn]["pixelX"] = movement * movementTicks
+                robots[playersTurn].movementLeftInTicks = movementTicks
+                if robots[playersTurn].orientation == 0:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "Y"
+                    robots[playersTurn].tileY -= 1
+                    robots[playersTurn].pixelY = movement * movementTicks
+                elif robots[playersTurn].orientation == 3:
+                    robots[playersTurn].movementDirection = -1
+                    robots[playersTurn].movementAxis = "X"
+                    robots[playersTurn].tileX -= 1
+                    robots[playersTurn].pixelX = movement * movementTicks
 
         else:
-            players[playersTurn]["movementLeftInTiles"] = 0
-            players[playersTurn]["moving"] = False
-
-def fillRegisters():
-    for player in players:
-        for y in range(5):
-            player["register"].append(choice(player["deck"]))
-
-def discardRegisters(): # Needs to be changed to discard cards to players discard pile in the future
-    for player in players:
-        player["register"] = []
+            robots[playersTurn].movementLeftInTiles = 0
+            robots[playersTurn].moving = False
 
 def nextPlayer():
     global playersTurn
-    if (players[playersTurn]["moved"]) or (not(players[playersTurn]["moving"])):
+    if (robots[playersTurn].moved) or (not(robots[playersTurn].moving)):
         playersTurn += 1
         if playersTurn > numberOfPlayers-1:
             playersTurn = 0
@@ -349,17 +358,17 @@ def nextRegister():
     global register
     global firstItterationOfRegister
     allPlayersDoneMoving = True
-    for player in players:
-        if (not(player["moved"])) or (player["moving"]):
+    for robot in robots:
+        if (not(robot.moved)) or (robot.moving):
             allPlayersDoneMoving = False
     if allPlayersDoneMoving:
-        for player in players:
-            player["moved"] = False
+        for robot in robots:
+            robot.moved = False
         firstItterationOfRegister = True
         register += 1
         if register > 4:
             register = 0
-            discardRegisters()
+            robot.discardRegisters()
 
 pygame.init()
 screen = pygame.display.set_mode((1920,1080))
@@ -1167,11 +1176,11 @@ while mainMenu:
     pygame.display.update()
     clock.tick(30)
 
-players = initiatePlayers()
+robots = initiateRobots()
 numberOfPlayers -= 1
-del players[1]
-players[0]["tileY"] = 1
-players[0]["tileX"] = 1
+del robots[1]
+robots[0].tileY = 1
+robots[0].tileX = 1
 gameLoopNumber = 0
 
 
@@ -1180,22 +1189,22 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-    if not(players[playersTurn]["register"]): # In future people will choose card themselves. For now it is automatic and random
-        fillRegisters()
+    if not(robots[playersTurn].register): # In future people will choose card themselves. For now it picks randomly
+        robot.fillRegisters()
     
     if gameLoopNumber > 10:
         print("PlayersTurn:", playersTurn, "Register:", register)
-        print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
+        print("TileX:", robots[playersTurn].tileX, "TileY:", robots[playersTurn].tileY, "PixelX:", robots[playersTurn].pixelX, "PixelY:", robots[playersTurn].pixelY, "Orientation:", robots[playersTurn].orientation, "Register:", robots[playersTurn].register, "Moved:", robots[playersTurn].moved, "Moving:", robots[playersTurn].moving)
         move()
 
-        print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
+        print("TileX:", robots[playersTurn].tileX, "TileY:", robots[playersTurn].tileY, "PixelX:", robots[playersTurn].pixelX, "PixelY:", robots[playersTurn].pixelY, "Orientation:", robots[playersTurn].orientation, "Register:", robots[playersTurn].register, "Moved:", robots[playersTurn].moved, "Moving:", robots[playersTurn].moving)
     
         nextPlayer()
     
         nextRegister()
     drawGameBoard()
-    drawPlayers()              
-    drawRegister()
+    robot.draw()              
+    robot.drawRegister()
     print(gameLoopNumber)
     pygame.display.update()
     clock.tick(2)
