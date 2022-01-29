@@ -1,6 +1,6 @@
 import pygame
 from sys import exit
-from random import choice
+from random import randint, choice
 import ctypes
 ctypes.windll.user32.SetProcessDPIAware()
 
@@ -186,8 +186,8 @@ def movementValid(): # Returns True or False
 
 def move():
     global firstItterationOfRegister
-    movement = 4 # Movement * movementTicks should be roughly 100 to avoid the bot from jumping when ariving at new tiles
-    movementTicks = 25
+    movement = 50 # Movement * movementTicks should be roughly 100 to avoid the bot from jumping when ariving at new tiles
+    movementTicks = 2
     if firstItterationOfRegister:
         players[playersTurn]["moved"] = True
         firstItterationOfRegister = False
@@ -306,7 +306,7 @@ def move():
     elif players[playersTurn]["movementLeftInTiles"]:
         players[playersTurn]["pixel" + players[playersTurn]["movementAxis"]] = 0
         if players[playersTurn]["register"][register] == "move1" or players[playersTurn]["register"][register] == "move2" or players[playersTurn]["register"][register] == "move3": 
-            if players[playersTurn]["orientation"] == 1:
+            if players[playersTurn]["orientation"] == 1: #Move these four lines to after the movement pixelX/Y is done, check todo at the bottom!
                 players[playersTurn]["tileX"] += 1
             elif players[playersTurn]["orientation"] == 2:
                 players[playersTurn]["tileY"] += 1
@@ -326,6 +326,7 @@ def move():
                     players[playersTurn]["pixelX"] = movement * movementTicks
 
         else:
+            players[playersTurn]["movementLeftInTiles"] = 0
             players[playersTurn]["moving"] = False
 
 def fillRegisters():
@@ -339,9 +340,10 @@ def discardRegisters(): # Needs to be changed to discard cards to players discar
 
 def nextPlayer():
     global playersTurn
-    playersTurn += 1
-    if playersTurn > numberOfPlayers-1:
-        playersTurn = 0
+    if (players[playersTurn]["moved"]) or (not(players[playersTurn]["moving"])):
+        playersTurn += 1
+        if playersTurn > numberOfPlayers-1:
+            playersTurn = 0
 
 def nextRegister():
     global register
@@ -370,10 +372,99 @@ logo = pygame.image.load('images/logo.png').convert()
 logoRect = logo.get_rect(center = (960,200))
 allSprites = loadSprites()
 normalTile = pygame.image.load('images/normalTile.png').convert()
+testMode = True
 
 
+if testMode:
+    listOfTiles = [{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 0,
+        "tileY": 0
+        },{
+        "sprite": "wallTile",
+        "orientation": 2,
+        "tileX": 1,
+        "tileY": 0
+        },{
+        "sprite": "wallTile",
+        "orientation": 2,
+        "tileX": 2,
+        "tileY": 0
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 3,
+        "tileY": 0
+        },
 
-listOfTiles = [{
+        {
+        "sprite": "wallTile",
+        "orientation": 1,
+        "tileX": 0,
+        "tileY": 1
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 1,
+        "tileY": 1
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 2,
+        "tileY": 1
+        },{
+        "sprite": "wallTile",
+        "orientation": 3,
+        "tileX": 3,
+        "tileY": 1
+        },
+
+        {
+        "sprite": "wallTile",
+        "orientation": 1,
+        "tileX": 0,
+        "tileY": 2
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 1,
+        "tileY": 2
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 2,
+        "tileY": 2
+        },{
+        "sprite": "wallTile",
+        "orientation": 3,
+        "tileX": 3,
+        "tileY": 2
+        },
+
+        {
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 0,
+        "tileY": 3
+        },{
+        "sprite": "wallTile",
+        "orientation": 0,
+        "tileX": 1,
+        "tileY": 3
+        },{
+        "sprite": "wallTile",
+        "orientation": 0,
+        "tileX": 2,
+        "tileY": 3
+        },{
+        "sprite": "normalTile",
+        "orientation": 0,
+        "tileX": 3,
+        "tileY": 3
+        }]
+else:
+    listOfTiles = [{
         "sprite": "normalTile",
         "orientation": 0,
         "tileX": 0,
@@ -1079,7 +1170,9 @@ while mainMenu:
 players = initiatePlayers()
 numberOfPlayers -= 1
 del players[1]
-players[0]["tileY"] = 3
+players[0]["tileY"] = 1
+players[0]["tileX"] = 1
+gameLoopNumber = 0
 
 
 while True:
@@ -1089,25 +1182,28 @@ while True:
             exit()
     if not(players[playersTurn]["register"]): # In future people will choose card themselves. For now it is automatic and random
         fillRegisters()
-    drawGameBoard()
-    drawPlayers()
-    print("PlayersTurn:", playersTurn, "Register:", register)
-    print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
     
-    move()
+    if gameLoopNumber > 10:
+        print("PlayersTurn:", playersTurn, "Register:", register)
+        print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
+        move()
 
-    print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
+        print("TileX:", players[playersTurn]["tileX"], "TileY:", players[playersTurn]["tileY"], "PixelX:", players[playersTurn]["pixelX"], "PixelY:", players[playersTurn]["pixelY"], "Orientation:", players[playersTurn]["orientation"], "Register:", players[playersTurn]["register"], "Moved:", players[playersTurn]["moved"], "Moving:", players[playersTurn]["moving"])
     
-    nextPlayer()
+        nextPlayer()
     
-    nextRegister()
-                  
+        nextRegister()
+    drawGameBoard()
+    drawPlayers()              
     drawRegister()
+    print(gameLoopNumber)
     pygame.display.update()
-    clock.tick(6)
+    clock.tick(2)
+    gameLoopNumber += 1
 
 
 """ To do:
-Make the deck
 Make reshuffle function
+When moving after instead of allways changing pixelY or PixelX, check if instead is time to reset it and change tileX or tileY instead(for orientation 1 and 2)
+Changed movement to do one bot until that bot is finnished moving. This might have introduced bugs when deciding wether or not to increase register after the first player is done moving(dont think so) or when the code changes moved or moving as it I think the code does it for all of them at the same time.
 """
