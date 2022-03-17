@@ -66,7 +66,34 @@ class robot:
             for y in range(5):
                 robot.register.append(choice(robot.deck))
 
+    def movementForwardValid():
+        "movement Forward Valid"
 
+    def moveForwardOne():
+        if firstItterationOfRegister:
+            robot.movementForwardValid()
+        "move Forward One"
+    
+    def moveForwardTwo():
+        "move Forward Two"
+    
+    def moveForwardThree():
+        "move Forward Three"
+    
+    def moveBackwards():
+        "move Backwards"
+
+    def turnRight():
+        "turn Right"
+    
+    def turnLeft():
+        "turn Left"
+
+    def uTurn():
+        "u-Turn"
+    
+    def powerUp():
+        "power-Up"
     tileX = 0
     tileY = 0
     pixelX = 0
@@ -365,9 +392,9 @@ def nextRegister():
         for robot in robots:
             robot.moved = False
         firstItterationOfRegister = True
-        register += 1
-        if register > 4:
-            register = 0
+        robot.register += 1
+        if robot.register > 4:
+            robot.register = 0
             robot.discardRegisters()
 
 pygame.init()
