@@ -392,9 +392,9 @@ def nextRegister():
         for robot in robots:
             robot.moved = False
         firstItterationOfRegister = True
-        robot.register += 1
-        if robot.register > 4:
-            robot.register = 0
+        register += 1
+        if register > 4:
+            register = 0
             robot.discardRegisters()
 
 pygame.init()
